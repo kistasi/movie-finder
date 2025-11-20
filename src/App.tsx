@@ -19,7 +19,7 @@ function App() {
   const [error, setError] = useState<Error | null>(null)
   const [movieDetails, setMovieDetails] = useState<TMDBMovieDetails | null>(null)
   const [wikipediaData, setWikipediaData] = useState<WikipediaData | null>(null)
-  const [wikipediaLoading, setWikipediaLoading] = useState(false)
+  const [detailsLoading, setDetailsLoading] = useState(false)
   const [wikipediaError, setWikipediaError] = useState<string>('')
   const [listMode, setListMode] = useState<'search' | 'related'>('search')
 
@@ -51,7 +51,7 @@ function App() {
 
   const handleMovieClick = async (movie: TMDBMovie) => {
     setSelectedMovie(movie)
-    setWikipediaLoading(true)
+    setDetailsLoading(true)
     setWikipediaError('')
     setWikipediaData(null)
     setMovieDetails(null)
@@ -72,7 +72,7 @@ function App() {
       setWikipediaError('Wikipedia page not found for this movie.')
     }
 
-    setWikipediaLoading(false)
+    setDetailsLoading(false)
   }
 
   const handleRelatedClick = async () => {
@@ -127,7 +127,7 @@ function App() {
               title={selectedMovie.title}
               summary={wikipediaData?.summary || ''}
               wikipediaUrl={wikipediaData?.url || ''}
-              loading={wikipediaLoading}
+              loading={detailsLoading}
               error={wikipediaError}
               director={movieDetails?.director}
               writers={movieDetails?.writers}

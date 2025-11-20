@@ -44,8 +44,20 @@ export function MovieDetail({
   if (loading) {
     return (
       <Paper elevation={2} sx={{ p: 3 }}>
-        <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-          <CircularProgress />
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            py: 6,
+            gap: 2,
+          }}
+        >
+          <CircularProgress size={40} />
+          <Typography variant="body2" color="text.secondary">
+            Loading movie details...
+          </Typography>
         </Box>
       </Paper>
     )

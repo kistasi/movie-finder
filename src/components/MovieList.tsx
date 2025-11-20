@@ -29,9 +29,23 @@ export function MovieList({
 }: MovieListProps) {
   if (loading) {
     return (
-      <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
-        <CircularProgress />
-      </Box>
+      <Paper elevation={2}>
+        <Box
+          sx={{
+            display: 'flex',
+            flexDirection: 'column',
+            alignItems: 'center',
+            justifyContent: 'center',
+            py: 6,
+            gap: 2,
+          }}
+        >
+          <CircularProgress size={40} />
+          <Typography variant="body2" color="text.secondary">
+            Loading movies...
+          </Typography>
+        </Box>
+      </Paper>
     )
   }
 
