@@ -56,7 +56,6 @@ function App() {
     setWikipediaData(null)
     setMovieDetails(null)
 
-    // Fetch both TMDB details and Wikipedia data in parallel
     const [details, wikipediaResult] = await Promise.all([
       getMovieDetails(movie.id),
       searchWikipedia(movie.title),
@@ -133,7 +132,7 @@ function App() {
               writers={movieDetails?.writers}
               cast={movieDetails?.cast}
               runtime={movieDetails?.runtime}
-              genres={movieDetails?.genres.map((g) => g.name)}
+              genres={movieDetails?.genres?.map((g) => g.name)}
               releaseDate={movieDetails?.release_date}
               onRelatedClick={handleRelatedClick}
             />

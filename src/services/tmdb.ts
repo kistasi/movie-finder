@@ -1,6 +1,18 @@
 const TMDB_API_KEY = import.meta.env.VITE_TMDB_API_KEY || ''
 const TMDB_BASE_URL = 'https://api.themoviedb.org/3'
 
+const CREW_JOBS = {
+  DIRECTOR: 'Director',
+  SCREENPLAY: 'Screenplay',
+  WRITER: 'Writer',
+  STORY: 'Story',
+} as const
+
+const LIMITS = {
+  WRITERS: 3,
+  CAST: 5,
+} as const
+
 export interface TMDBMovie {
   id: number
   title: string
@@ -28,21 +40,67 @@ interface TMDBSearchResponse {
   results: TMDBMovie[]
 }
 
+interface TMDBMovieDetailsResponse {
+  id: number
+  title: string
+  overview: string
+  release_date: string
+  vote_average: number
+  runtime: number
+  genres: Array<{ id: number; name: string }>
+  poster_path?: string
+}
+
 interface TMDBCreditsResponse {
   cast: Array<{ name: string; order: number }>
   crew: Array<{ name: string; job: string }>
 }
 
-export async function searchMovies(query: string): Promise<TMDBMovie[]> {
+function validateApiKey(): void {
   if (!TMDB_API_KEY) {
     throw new Error('TMDB API key is not configured')
   }
+}
 
-  const url = new URL(`${TMDB_BASE_URL}/search/movie`)
+function buildUrl(endpoint: string, params?: Record<string, string>): string {
+  const url = new URL(`${TMDB_BASE_URL}${endpoint}`)
   url.searchParams.append('api_key', TMDB_API_KEY)
-  url.searchParams.append('query', query)
 
-  const response = await fetch(url.toString())
+  if (params) {
+    Object.entries(params).forEach(([key, value]) => {
+      url.searchParams.append(key, value)
+    })
+  }
+
+  return url.toString()
+}
+
+function extractDirector(crew: TMDBCreditsResponse['crew']): string | undefined {
+  return crew.find((person) => person.job === CREW_JOBS.DIRECTOR)?.name
+}
+
+function extractWriters(crew: TMDBCreditsResponse['crew']): string[] {
+  const writerJobs = [CREW_JOBS.SCREENPLAY, CREW_JOBS.WRITER, CREW_JOBS.STORY]
+
+  return crew
+    .filter((person) => writerJobs.includes(person.job as typeof writerJobs[number]))
+    .map((person) => person.name)
+    .filter((name, index, self) => self.indexOf(name) === index)
+    .slice(0, LIMITS.WRITERS)
+}
+
+function extractCast(cast: TMDBCreditsResponse['cast']): string[] {
+  return cast
+    .sort((a, b) => a.order - b.order)
+    .slice(0, LIMITS.CAST)
+    .map((person) => person.name)
+}
+
+export async function searchMovies(query: string): Promise<TMDBMovie[]> {
+  validateApiKey()
+
+  const url = buildUrl('/search/movie', { query })
+  const response = await fetch(url)
 
   if (!response.ok) {
     throw new Error(`TMDB API error: ${response.statusText}`)
@@ -55,49 +113,23 @@ export async function searchMovies(query: string): Promise<TMDBMovie[]> {
 export async function getMovieDetails(
   movieId: number
 ): Promise<TMDBMovieDetails | null> {
-  if (!TMDB_API_KEY) {
-    throw new Error('TMDB API key is not configured')
-  }
+  validateApiKey()
 
   try {
-    // Fetch movie details and credits in parallel
+    const detailsUrl = buildUrl(`/movie/${movieId}`)
+    const creditsUrl = buildUrl(`/movie/${movieId}/credits`)
+
     const [detailsResponse, creditsResponse] = await Promise.all([
-      fetch(
-        `${TMDB_BASE_URL}/movie/${movieId}?api_key=${TMDB_API_KEY}`
-      ),
-      fetch(
-        `${TMDB_BASE_URL}/movie/${movieId}/credits?api_key=${TMDB_API_KEY}`
-      ),
+      fetch(detailsUrl),
+      fetch(creditsUrl),
     ])
 
     if (!detailsResponse.ok || !creditsResponse.ok) {
       return null
     }
 
-    const details = await detailsResponse.json()
+    const details: TMDBMovieDetailsResponse = await detailsResponse.json()
     const credits: TMDBCreditsResponse = await creditsResponse.json()
-
-    // Extract director
-    const director = credits.crew.find((person) => person.job === 'Director')
-
-    // Extract writers (screenplay, writer, story)
-    const writers = credits.crew
-      .filter(
-        (person) =>
-          person.job === 'Screenplay' ||
-          person.job === 'Writer' ||
-          person.job === 'Story'
-      )
-      .map((person) => person.name)
-      // Remove duplicates
-      .filter((name, index, self) => self.indexOf(name) === index)
-      .slice(0, 3) // Limit to 3 writers
-
-    // Extract top cast (first 5)
-    const cast = credits.cast
-      .sort((a, b) => a.order - b.order)
-      .slice(0, 5)
-      .map((person) => person.name)
 
     return {
       id: details.id,
@@ -107,9 +139,9 @@ export async function getMovieDetails(
       vote_average: details.vote_average,
       runtime: details.runtime,
       genres: details.genres,
-      director: director?.name,
-      writers,
-      cast,
+      director: extractDirector(credits.crew),
+      writers: extractWriters(credits.crew),
+      cast: extractCast(credits.cast),
       poster_path: details.poster_path,
     }
   } catch (error) {
@@ -121,14 +153,11 @@ export async function getMovieDetails(
 export async function getRelatedMovies(
   movieId: number
 ): Promise<TMDBMovie[]> {
-  if (!TMDB_API_KEY) {
-    throw new Error('TMDB API key is not configured')
-  }
+  validateApiKey()
 
   try {
-    const response = await fetch(
-      `${TMDB_BASE_URL}/movie/${movieId}/similar?api_key=${TMDB_API_KEY}`
-    )
+    const url = buildUrl(`/movie/${movieId}/similar`)
+    const response = await fetch(url)
 
     if (!response.ok) {
       return []

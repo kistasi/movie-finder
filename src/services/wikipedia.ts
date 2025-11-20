@@ -8,7 +8,6 @@ export async function searchWikipedia(
   title: string
 ): Promise<WikipediaData | null> {
   try {
-    // First, search for the page
     const searchResponse = await fetch(
       `https://en.wikipedia.org/w/rest.php/v1/search/page?q=${encodeURIComponent(title)}&limit=1`
     )
@@ -25,7 +24,6 @@ export async function searchWikipedia(
 
     const pageTitle = searchData.pages[0].key
 
-    // Get the page summary
     const summaryResponse = await fetch(
       `https://en.wikipedia.org/api/rest_v1/page/summary/${encodeURIComponent(pageTitle)}`
     )

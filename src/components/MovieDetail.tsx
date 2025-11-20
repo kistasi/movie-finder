@@ -63,7 +63,6 @@ export function MovieDetail({
     )
   }
 
-  // Show error only if we don't have movie details either
   if (error && !director && !cast) {
     return (
       <Paper elevation={2} sx={{ p: 3 }}>
@@ -76,7 +75,6 @@ export function MovieDetail({
     )
   }
 
-  // Don't show anything if we have no data at all
   if (!summary && !director && !cast && !runtime) {
     return null
   }
@@ -88,7 +86,6 @@ export function MovieDetail({
       </Typography>
       <Divider sx={{ mb: 2 }} />
 
-      {/* Movie metadata */}
       <Box sx={{ mb: 2 }}>
         {releaseDate && (
           <Typography variant="body2" color="text.secondary" gutterBottom>
