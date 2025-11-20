@@ -3,8 +3,8 @@ import { Container, Typography, Box, Divider } from '@mui/material'
 import { SearchBox } from './components/SearchBox'
 import { MovieList } from './components/MovieList'
 import { MovieDetail } from './components/MovieDetail'
-import { searchMovies as searchTMDB } from './services/tmdb'
-import type { TMDBMovie } from './services/tmdb'
+import { searchMovies as searchTMDB, getMovieDetails } from './services/tmdb'
+import type { TMDBMovie, TMDBMovieDetails } from './services/tmdb'
 import { searchWikipedia } from './services/wikipedia'
 import type { WikipediaData } from './types/wikipedia'
 
@@ -13,6 +13,7 @@ function App() {
   const [movies, setMovies] = useState<TMDBMovie[]>([])
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState<Error | null>(null)
+  const [movieDetails, setMovieDetails] = useState<TMDBMovieDetails | null>(null)
   const [wikipediaData, setWikipediaData] = useState<WikipediaData | null>(null)
   const [wikipediaLoading, setWikipediaLoading] = useState(false)
   const [wikipediaError, setWikipediaError] = useState<string>('')
@@ -25,6 +26,7 @@ function App() {
 
   const handleSearch = async (searchQuery: string) => {
     setSelectedMovie(null)
+    setMovieDetails(null)
     setWikipediaData(null)
     setWikipediaError('')
     setLoading(true)
@@ -46,11 +48,20 @@ function App() {
     setWikipediaLoading(true)
     setWikipediaError('')
     setWikipediaData(null)
+    setMovieDetails(null)
 
-    const result = await searchWikipedia(movie.title)
+    // Fetch both TMDB details and Wikipedia data in parallel
+    const [details, wikipediaResult] = await Promise.all([
+      getMovieDetails(movie.id),
+      searchWikipedia(movie.title),
+    ])
 
-    if (result) {
-      setWikipediaData(result)
+    if (details) {
+      setMovieDetails(details)
+    }
+
+    if (wikipediaResult) {
+      setWikipediaData(wikipediaResult)
     } else {
       setWikipediaError('Wikipedia page not found for this movie.')
     }
@@ -94,6 +105,12 @@ function App() {
               wikipediaUrl={wikipediaData?.url || ''}
               loading={wikipediaLoading}
               error={wikipediaError}
+              director={movieDetails?.director}
+              writers={movieDetails?.writers}
+              cast={movieDetails?.cast}
+              runtime={movieDetails?.runtime}
+              genres={movieDetails?.genres.map((g) => g.name)}
+              releaseDate={movieDetails?.release_date}
             />
           </Box>
         )}
