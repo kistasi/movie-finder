@@ -3,7 +3,11 @@ import { Container, Typography, Box, Divider } from '@mui/material'
 import { SearchBox } from './components/SearchBox'
 import { MovieList } from './components/MovieList'
 import { MovieDetail } from './components/MovieDetail'
-import { searchMovies as searchTMDB, getMovieDetails } from './services/tmdb'
+import {
+  searchMovies as searchTMDB,
+  getMovieDetails,
+  getRelatedMovies,
+} from './services/tmdb'
 import type { TMDBMovie, TMDBMovieDetails } from './services/tmdb'
 import { searchWikipedia } from './services/wikipedia'
 import type { WikipediaData } from './types/wikipedia'
@@ -17,6 +21,7 @@ function App() {
   const [wikipediaData, setWikipediaData] = useState<WikipediaData | null>(null)
   const [wikipediaLoading, setWikipediaLoading] = useState(false)
   const [wikipediaError, setWikipediaError] = useState<string>('')
+  const [listMode, setListMode] = useState<'search' | 'related'>('search')
 
   useEffect(() => {
     if (error) {
@@ -31,6 +36,7 @@ function App() {
     setWikipediaError('')
     setLoading(true)
     setError(null)
+    setListMode('search')
 
     try {
       const results = await searchTMDB(searchQuery)
@@ -69,6 +75,23 @@ function App() {
     setWikipediaLoading(false)
   }
 
+  const handleRelatedClick = async () => {
+    if (!selectedMovie) return
+
+    setLoading(true)
+    setListMode('related')
+
+    try {
+      const relatedMovies = await getRelatedMovies(selectedMovie.id)
+      setMovies(relatedMovies)
+    } catch (err) {
+      console.error('Error fetching related movies:', err)
+      setMovies([])
+    } finally {
+      setLoading(false)
+    }
+  }
+
   return (
     <Container maxWidth="lg" sx={{ py: 4 }}>
       <Box sx={{ mb: 4 }}>
@@ -94,6 +117,7 @@ function App() {
             movies={movies}
             onMovieClick={handleMovieClick}
             loading={loading}
+            title={listMode === 'search' ? 'Search Results' : 'Related Movies'}
           />
         </Box>
 
@@ -111,6 +135,7 @@ function App() {
               runtime={movieDetails?.runtime}
               genres={movieDetails?.genres.map((g) => g.name)}
               releaseDate={movieDetails?.release_date}
+              onRelatedClick={handleRelatedClick}
             />
           </Box>
         )}

@@ -6,8 +6,11 @@ import {
   Alert,
   Link,
   Divider,
+  Button,
+  Stack,
 } from '@mui/material'
 import OpenInNewIcon from '@mui/icons-material/OpenInNew'
+import MovieIcon from '@mui/icons-material/Movie'
 
 interface MovieDetailProps {
   title: string
@@ -21,6 +24,7 @@ interface MovieDetailProps {
   runtime?: number
   genres?: string[]
   releaseDate?: string
+  onRelatedClick?: () => void
 }
 
 export function MovieDetail({
@@ -35,6 +39,7 @@ export function MovieDetail({
   runtime,
   genres,
   releaseDate,
+  onRelatedClick,
 }: MovieDetailProps) {
   if (loading) {
     return (
@@ -112,20 +117,32 @@ export function MovieDetail({
           <Typography variant="body1" paragraph sx={{ lineHeight: 1.7 }}>
             {summary}
           </Typography>
-          <Link
-            href={wikipediaUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            sx={{
-              display: 'inline-flex',
-              alignItems: 'center',
-              gap: 0.5,
-              fontWeight: 500,
-            }}
-          >
-            Read more on Wikipedia
-            <OpenInNewIcon fontSize="small" />
-          </Link>
+          <Stack direction="row" spacing={2} alignItems="center">
+            <Link
+              href={wikipediaUrl}
+              target="_blank"
+              rel="noopener noreferrer"
+              sx={{
+                display: 'inline-flex',
+                alignItems: 'center',
+                gap: 0.5,
+                fontWeight: 500,
+              }}
+            >
+              Read more on Wikipedia
+              <OpenInNewIcon fontSize="small" />
+            </Link>
+            {onRelatedClick && (
+              <Button
+                variant="outlined"
+                size="small"
+                startIcon={<MovieIcon />}
+                onClick={onRelatedClick}
+              >
+                Related
+              </Button>
+            )}
+          </Stack>
         </>
       )}
     </Paper>

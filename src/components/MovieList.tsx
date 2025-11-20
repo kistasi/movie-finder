@@ -18,9 +18,15 @@ interface MovieListProps {
   movies: TMDBMovie[]
   onMovieClick: (movie: TMDBMovie) => void
   loading: boolean
+  title?: string
 }
 
-export function MovieList({ movies, onMovieClick, loading }: MovieListProps) {
+export function MovieList({
+  movies,
+  onMovieClick,
+  loading,
+  title = 'Search Results',
+}: MovieListProps) {
   if (loading) {
     return (
       <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
@@ -36,7 +42,7 @@ export function MovieList({ movies, onMovieClick, loading }: MovieListProps) {
   return (
     <Paper elevation={2}>
       <Box sx={{ p: 2, borderBottom: 1, borderColor: 'divider' }}>
-        <Typography variant="h6">Search Results</Typography>
+        <Typography variant="h6">{title}</Typography>
       </Box>
       <List disablePadding>
         {movies.map((movie, index) => (

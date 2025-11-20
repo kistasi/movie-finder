@@ -117,3 +117,27 @@ export async function getMovieDetails(
     return null
   }
 }
+
+export async function getRelatedMovies(
+  movieId: number
+): Promise<TMDBMovie[]> {
+  if (!TMDB_API_KEY) {
+    throw new Error('TMDB API key is not configured')
+  }
+
+  try {
+    const response = await fetch(
+      `${TMDB_BASE_URL}/movie/${movieId}/similar?api_key=${TMDB_API_KEY}`
+    )
+
+    if (!response.ok) {
+      return []
+    }
+
+    const data: TMDBSearchResponse = await response.json()
+    return data.results
+  } catch (error) {
+    console.error('Error fetching related movies:', error)
+    return []
+  }
+}
