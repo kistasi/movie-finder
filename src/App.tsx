@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react'
+import { Container, Typography, Box, Divider } from '@mui/material'
 import { SearchBox } from './components/SearchBox'
 import { MovieList } from './components/MovieList'
 import { MovieDetail } from './components/MovieDetail'
@@ -58,22 +59,35 @@ function App() {
   }
 
   return (
-    <div className="app">
-      <header className="header">
-        <h1>Movie Finder</h1>
-      </header>
+    <Container maxWidth="lg" sx={{ py: 4 }}>
+      <Box sx={{ mb: 4 }}>
+        <Typography variant="h3" component="h1" gutterBottom>
+          Movie Finder
+        </Typography>
+        <Divider />
+      </Box>
 
-      <main className="main">
+      <Box sx={{ mb: 4 }}>
         <SearchBox onSearch={handleSearch} />
+      </Box>
 
-        <div className="content">
+      <Box
+        sx={{
+          display: 'grid',
+          gridTemplateColumns: { xs: '1fr', md: '1fr 1fr' },
+          gap: 3,
+        }}
+      >
+        <Box>
           <MovieList
             movies={movies}
             onMovieClick={handleMovieClick}
             loading={loading}
           />
+        </Box>
 
-          {selectedMovie && (
+        {selectedMovie && (
+          <Box>
             <MovieDetail
               title={selectedMovie.title}
               summary={wikipediaData?.summary || ''}
@@ -81,10 +95,10 @@ function App() {
               loading={wikipediaLoading}
               error={wikipediaError}
             />
-          )}
-        </div>
-      </main>
-    </div>
+          </Box>
+        )}
+      </Box>
+    </Container>
   )
 }
 

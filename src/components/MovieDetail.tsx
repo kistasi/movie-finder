@@ -1,3 +1,14 @@
+import {
+  Paper,
+  Typography,
+  Box,
+  CircularProgress,
+  Alert,
+  Link,
+  Divider,
+} from '@mui/material'
+import OpenInNewIcon from '@mui/icons-material/OpenInNew'
+
 interface MovieDetailProps {
   title: string
   summary: string
@@ -15,18 +26,23 @@ export function MovieDetail({
 }: MovieDetailProps) {
   if (loading) {
     return (
-      <div className="movie-detail">
-        <div className="loading">Loading Wikipedia summary...</div>
-      </div>
+      <Paper elevation={2} sx={{ p: 3 }}>
+        <Box sx={{ display: 'flex', justifyContent: 'center', p: 4 }}>
+          <CircularProgress />
+        </Box>
+      </Paper>
     )
   }
 
   if (error) {
     return (
-      <div className="movie-detail">
-        <h2>{title}</h2>
-        <p className="error">{error}</p>
-      </div>
+      <Paper elevation={2} sx={{ p: 3 }}>
+        <Typography variant="h6" gutterBottom>
+          {title}
+        </Typography>
+        <Divider sx={{ mb: 2 }} />
+        <Alert severity="error">{error}</Alert>
+      </Paper>
     )
   }
 
@@ -35,17 +51,28 @@ export function MovieDetail({
   }
 
   return (
-    <div className="movie-detail">
-      <h2>{title}</h2>
-      <p className="summary">{summary}</p>
-      <a
+    <Paper elevation={2} sx={{ p: 3 }}>
+      <Typography variant="h6" gutterBottom>
+        {title}
+      </Typography>
+      <Divider sx={{ mb: 2 }} />
+      <Typography variant="body1" paragraph sx={{ lineHeight: 1.7 }}>
+        {summary}
+      </Typography>
+      <Link
         href={wikipediaUrl}
         target="_blank"
         rel="noopener noreferrer"
-        className="wikipedia-link"
+        sx={{
+          display: 'inline-flex',
+          alignItems: 'center',
+          gap: 0.5,
+          fontWeight: 500,
+        }}
       >
-        Read more on Wikipedia →
-      </a>
-    </div>
+        Read more on Wikipedia
+        <OpenInNewIcon fontSize="small" />
+      </Link>
+    </Paper>
   )
 }
